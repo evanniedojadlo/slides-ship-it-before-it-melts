@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ship It Before It Melts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#26232e;
+    --sky:#8fd6e8;
+    --sky-hot:#ffd9a0;
+    --sand:#f4d9a6;
+    --cream:#fff6e8;
+    --cherry:#e4552d;
+    --mint:#57b98a;
+    --sun:#ffc53d;
+    --steel:#8c97ab;
+    --grape:#7b6fa6;
+    --px: 6px;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--sky);
+    color:var(--ink);
+    font-family:'VT323', ui-monospace, 'Courier New', monospace;
+    font-size:26px;
+    line-height:1.35;
+  }
+  h1,h2,.pixel{
+    font-family:'Press Start 2P', ui-monospace, monospace;
+    line-height:1.6;
+    letter-spacing:0;
+  }
+  h2{ font-size:clamp(15px,2.6vw,24px); margin:0 0 22px; text-transform:uppercase; }
+  p{ margin:0 0 14px; max-width:34em; }
+  ul{ margin:0 0 14px; padding-left:1.1em; max-width:34em; }
+  li{ margin-bottom:8px; }
+  li::marker{ content:"► "; color:var(--cherry); font-size:.7em; }
+  strong{ color:var(--cherry); font-weight:normal; }
+  em{ font-style:normal; color:var(--grape); }
+  code{
+    font-family:'VT323', monospace;
+    background:var(--ink); color:var(--sand);
+    padding:1px 8px; border-radius:0;
+  }
+  a{ color:var(--ink); text-decoration-thickness:3px; text-decoration-color:var(--cherry); }
+
+  /* ---- slide panels: one continuous landscape scroll ---- */
+  .slide{
+    position:relative;
+    min-height:92vh;
+    padding:9vh 7vw 14vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    border-bottom:var(--px) solid var(--ink);
+  }
+  .slide > .card, .slide > .scene{ width:min(760px,100%); }
+  .slide.sky{ background:var(--sky); }
+  .slide.sand{ background:var(--sand); }
+  .slide.dusk{ background:linear-gradient(var(--sky) 0 55%, var(--sky-hot) 55% 78%, var(--sand) 78%); }
+  .slide.night{ background:var(--ink); color:var(--cream); }
+  .slide.night strong{ color:var(--sun); }
+  .slide.night em{ color:var(--mint); }
+  .slide.night h2{ color:var(--sun); }
+  .slide.night a{ color:var(--cream); text-decoration-color:var(--sun); }
+  .slide.night code{ background:var(--cream); color:var(--ink); }
+
+
+  .card{
+    background:var(--cream);
+    border:var(--px) solid var(--ink);
+    box-shadow:var(--px) var(--px) 0 var(--ink);
+    padding:30px 34px;
+    max-width:760px;
+  }
+  .night .card{ background:#332f3d; box-shadow:var(--px) var(--px) 0 #000; }
+
+  .scene{
+    display:flex; gap:34px; align-items:flex-end; flex-wrap:wrap;
+    margin-top:34px;
+  }
+  canvas.art{ image-rendering:pixelated; display:block; }
+
+  /* title slide */
+  #title{
+    min-height:100vh;
+    text-align:center;
+    align-items:center;
+    background:linear-gradient(var(--sky) 0 62%, var(--sky-hot) 62% 82%, var(--sand) 82%);
+  }
+  #title h1{
+    font-size:clamp(22px,5vw,52px);
+    margin:26px 0 10px;
+    text-shadow:5px 5px 0 var(--cream);
+  }
+  #title .sub{ font-size:30px; max-width:26em; }
+  #title .byline{ font-family:'Press Start 2P',monospace; font-size:12px; margin-top:26px; }
+  .titlerow{ display:flex; gap:44px; align-items:flex-end; justify-content:center; flex-wrap:wrap; }
+
+  /* signature: the melting popsicle scroll gauge */
+  #melt{
+    position:fixed; right:14px; bottom:12px; z-index:9;
+    text-align:center;
+    background:var(--cream);
+    border:4px solid var(--ink);
+    box-shadow:4px 4px 0 var(--ink);
+    padding:8px 10px 4px;
+  }
+  #melt .lbl{ font-family:'Press Start 2P',monospace; font-size:8px; display:block; margin-top:4px; }
+  @media (max-width:640px){
+    body{ font-size:22px; }
+    .card{ padding:20px; }
+    #melt{ transform:scale(.8); transform-origin:bottom right; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ scroll-behavior:auto !important; animation:none !important; }
+  }
+  .heatline{ position:absolute; inset:auto 0 0 0; }
+</style>
+</head>
+<body>
+
+<!-- ========== 1 · TITLE ========== -->
+<section class="slide" id="title">
+  <div class="titlerow">
+    <canvas class="art" data-art="sun" data-scale="7"></canvas>
+    <canvas class="art" data-art="robot" data-scale="8"></canvas>
+    <canvas class="art" data-art="dog" data-scale="8"></canvas>
+    <canvas class="art" data-art="cone" data-scale="7"></canvas>
+  </div>
+  <h1>SHIP IT<br>BEFORE IT MELTS</h1>
+  <p class="sub">Zero to production AI agents in one day on AWS Bedrock AgentCore.</p>
+  <p class="byline">A Dog Days of DevOps Lightning talk by Evan Niedojadlo</p>
+</section>
+
+<!-- ========== 2 · THE PREMISE ========== -->
+<section class="slide sand">
+  <div class="card">
+    <h2>One day. Production. For real.</h2>
+    <p>In February I built a multi-agent platform on <strong>AWS Bedrock AgentCore</strong> with the <strong>Strands Agents SDK</strong>. First working agent to production: <em>in a day</em>. Then months of iterating while it ran.</p>
+    <p>This talk is the recipe, and the guardrails I only learned by getting burned.</p>
+  </div>
+  <div class="scene"><canvas class="art" data-art="cactus" data-scale="6"></canvas><canvas class="art" data-art="cactus2" data-scale="6"></canvas></div>
+</section>
+
+<!-- ========== 3 · AI EMPLOYEES ========== -->
+<section class="slide sky">
+  <div class="card">
+    <h2>Hire robots, not bots</h2>
+    <p>The core design decision: every agent is an <strong>AI employee</strong>, not an integration.</p>
+    <ul>
+      <li>Its own <strong>company email</strong> and its own <strong>Slack account</strong></li>
+      <li>Its own <strong>database user</strong>, <strong>Jira/Confluence account</strong>, and secrets path</li>
+      <li>A "soul": a wiki page it reads at boot that defines its personality and job</li>
+    </ul>
+    <p>Payoff: every query, comment, and commit is <em>attributable</em> and every credential is <em>independently rotatable</em>. Security people sleep at night.</p>
+  </div>
+  <div class="scene">
+    <canvas class="art" data-art="robot" data-scale="6"></canvas>
+    <canvas class="art" data-art="robot2" data-scale="6"></canvas>
+    <canvas class="art" data-art="robot3" data-scale="6"></canvas>
+  </div>
+</section>
+
+<!-- ========== 4 · THE STACK ========== -->
+<section class="slide sand">
+  <div class="card">
+    <h2>The stack (small on purpose)</h2>
+    <ul>
+      <li><strong>AgentCore Runtime</strong>: serverless containers, direct code deploy, versioned rollbacks</li>
+      <li><strong>Strands SDK</strong>: <code>@tool</code> functions, model switching, MCP, memory</li>
+      <li>Python 3.11 + <code>uv</code> + <code>ruff</code>; Claude on Bedrock by default, ~11 models swappable per session</li>
+      <li>Built-in <strong>Code Interpreter</strong> sandbox + managed <strong>Browser</strong></li>
+    </ul>
+    <p>No Kubernetes to babysit. No GPU bill. The platform is boring so the agents can be interesting.</p>
+  </div>
+</section>
+
+<!-- ========== 5 · TOOLS, THREE SCOOPS ========== -->
+<section class="slide sky">
+  <div class="card">
+    <h2>Tools: three scoops, one cone</h2>
+    <ul>
+      <li><strong>Scoop 1</strong>: framework tools (code interpreter, browser)</li>
+      <li><strong>Scoop 2</strong>: a shared org toolbox: data warehouse, Jira, Slack, GitHub, wiki, dashboards… ~40 modules</li>
+      <li><strong>Scoop 3</strong>: agent-specific tools on top</li>
+    </ul>
+    <p>Every agent gets <em>every</em> tool by default; access control is a <strong>denylist in config</strong>, never a forked copy of the code. CI fails any PR where an agent's tool bundle drifts from the shared library.</p>
+    <p>House rule: <strong>no tool ships without a wiki page</strong>, and that index is literally what agents read when you ask "what can you do?"</p>
+  </div>
+  <div class="scene"><canvas class="art" data-art="cone" data-scale="8"></canvas></div>
+</section>
+
+<!-- ========== 6 · SLACK ========== -->
+<section class="slide dusk">
+  <div class="card">
+    <h2>Slack: they show up as people</h2>
+    <p>Two Lambdas per agent: a <strong>dispatcher</strong> (verifies, drops an 👀 ack) and an <strong>async worker</strong> that calls the runtime and replies with the agent's <em>user token</em>, so it appears as a person, not an app.</p>
+    <p><strong>Slack is the source of truth</strong>: the worker re-hydrates the whole thread on every invoke. No sticky sessions, no state to lose.</p>
+    <p>Learned the hard way: require @-mentions (stops multi-agent pile-ons), convert Markdown tables to code blocks, and invalidate sessions on every deploy.</p>
+  </div>
+</section>
+
+<!-- ========== 7 · GRADUATION PATH ========== -->
+<section class="slide sand">
+  <div class="card">
+    <h2>Let workflows graduate</h2>
+    <p>Rule: <strong>every step that can be code, is code.</strong> The LLM only handles steps that genuinely need judgment. Each workflow has three lives:</p>
+    <ul>
+      <li><strong>Agentic</strong>: runs in the agent, LLM makes the judgment calls</li>
+      <li><strong>Ejected in-process</strong>: same Python, deterministic fallbacks, used for tests</li>
+      <li><strong>Ejected to n8n</strong>: one command compiles it to workflow JSON and pushes it to run on cron at <em>zero AI cost</em></li>
+    </ul>
+    <p>Prototype with reasoning. Ship as plain code. Your token bill melts instead of your budget.</p>
+  </div>
+  <div class="scene"><canvas class="art" data-art="pop" data-scale="7"></canvas><canvas class="art" data-art="pop2" data-scale="7"></canvas><canvas class="art" data-art="pop3" data-scale="7"></canvas></div>
+</section>
+
+<!-- ========== 8 · THE CODE FACTORY ========== -->
+<section class="slide night">
+  <div class="card">
+    <h2>The code factory (yes, really)</h2>
+    <p>The agents extend <em>themselves</em>. One Slack message →</p>
+    <ul>
+      <li>agent reads existing patterns from the repo</li>
+      <li>drafts the tool + pytest, loops in the sandbox until green</li>
+      <li>opens a PR to trunk → auto-merge on green CI → deploy</li>
+      <li><strong>live in ~2.5 minutes</strong>, no human in the path</li>
+    </ul>
+    <p><strong>26 of 170</strong> merged PRs were authored by the agents. Trunk-based, one environment, no staging soak; the trust boundary is CI, plus a post-deploy smoke test, plus a one-line version rollback.</p>
+  </div>
+  <div class="scene"><canvas class="art" data-art="robot" data-scale="6"></canvas></div>
+</section>
+
+<!-- ========== 9 · TAKEAWAYS ========== -->
+<section class="slide dusk">
+  <div class="card">
+    <h2>Popsicle stick wisdom</h2>
+    <ul>
+      <li><strong>Identity per agent.</strong> Attribution and rotation are the whole security story.</li>
+      <li><strong>Rent the runtime.</strong> Serverless agents = production in days, not quarters.</li>
+      <li><strong>Code &gt; tokens.</strong> Graduate proven workflows out of the LLM.</li>
+      <li><strong>CI is the trust boundary.</strong> That's what makes self-modifying agents safe enough.</li>
+      <li><strong>Write the docs.</strong> Your agents are reading them.</li>
+    </ul>
+    <p>Find me: <a href="https://github.com/evanniedojadlo">github.com/evanniedojadlo</a> · <a href="https://www.youtube.com/randomthoughtstech">YouTube</a> · <a href="https://randomthoughts.dev">randomthoughts.dev</a></p>
+  </div>
+  <div class="scene">
+    <canvas class="art" data-art="dog" data-scale="7"></canvas>
+    <canvas class="art" data-art="sun" data-scale="6"></canvas>
+    <canvas class="art" data-art="cactus" data-scale="6"></canvas>
+  </div>
+</section>
+
+<!-- signature: melting popsicle scroll gauge -->
+<div id="melt" aria-hidden="true">
+  <canvas class="art" id="meltCanvas"></canvas>
+  <span class="lbl" id="meltLbl">0:00</span>
+</div>
+
+<script>
+/* ---- tiny pixel-art engine: string maps → crisp canvases ---- */
+const C = { k:'#26232e', w:'#fff6e8', r:'#e4552d', p:'#f78fb3', y:'#ffc53d',
+            g:'#57b98a', s:'#8c97ab', v:'#7b6fa6', b:'#8fd6e8', t:'#c9a26b',
+            o:'#f49f3e', d:'#e8c07d', n:'#5c5566' };
+
+const ART = {
+sun: [
+"....y....y....",
+".y...yyyy...y.",
+"...yyyyyyyy...",
+"..yyyyyyyyyy..",
+".yyyyokkoyyyy.",
+"yyyyyoyyoyyyyy",
+".yyyyyyyyyyyy.",
+"yyyyokyykoyyyy",
+".yyyyokkoyyyy.",
+"..yyyyyyyyyy..",
+"...yyyyyyyy...",
+".y...yyyy...y.",
+"....y....y...."
+],
+robot: [
+"..kkkkkkkk..",
+".kssssssssk.",
+".ksbksskbsk.",
+".kssssssssk.",
+".ksskkkkssk.",
+"..kkkkkkkk..",
+"kk.kssssk.kk",
+"ks.kryyrk.sk",
+"kk.kssssk.kk",
+"...kssssk...",
+"..kkk..kkk..",
+"..ks....sk..",
+"..kk....kk.."
+],
+robot2: [
+"..kkkkkkkk..",
+".kggggggggk.",
+".kgwkggkwgk.",
+".kggggggggk.",
+".kggkkkkggk.",
+"..kkkkkkkk..",
+"kk.kggggk.kk",
+"kg.kyrryk.gk",
+"kk.kggggk.kk",
+"...kggggk...",
+"..kkk..kkk..",
+"..kg....gk..",
+"..kk....kk.."
+],
+robot3: [
+"..kkkkkkkk..",
+".kvvvvvvvvk.",
+".kvwkvvkwvk.",
+".kvvvvvvvvk.",
+".kvvkkkkvvk.",
+"..kkkkkkkk..",
+"kk.kvvvvk.kk",
+"kv.kgyygk.vk",
+"kk.kvvvvk.kk",
+"...kvvvvk...",
+"..kkk..kkk..",
+"..kv....vk..",
+"..kk....kk.."
+],
+dog: [
+"..kk......kk..",
+".ktdk....kdtk.",
+".ktddkkkkddtk.",
+".kddddddddddk.",
+".kdkkddddkkdk.",
+".kdkwkddkwkdk.",  /* sunglasses */
+".kdkkddddkkdk.",
+".kddddkkddddk.",
+"..kdddkkdddk..",
+"..kddddddddk..",
+"...kkddddkk...",
+"..kdk.kk.kdk..",
+"..kk......kk.."
+],
+cone: [
+"....rrrr....",
+"...rrpprr...",
+"..rrrrrrrr..",
+"..wwwwwwww..",
+".wwgwwwwgww.",
+".wwwwgwwwww.",
+"..wwwwwwww..",
+"..kttttttk..",
+"...kttttk...",
+"...ktkttk...",
+"....kttk....",
+"....ktkk....",
+".....kk....."
+],
+cactus: [
+"....kkkk....",
+"....kggk....",
+"....kggk....",
+"kk..kggk..kk",
+"kgk.kggk.kgk",
+"kgk.kggk.kgk",
+"kggkkggkkggk",
+".kggkggkggk.",
+"..kkggggkk..",
+"....kggk....",
+"....kggk....",
+"...kkkkkk...",
+"..kttttttk.."
+],
+cactus2: [
+"....kkkk....",
+"....kggk....",
+"....kggk.kk.",
+"....kggkkkgk",
+"....kggggggk",
+"....kggkkkk.",
+".kk.kggk....",
+".kgkkggk....",
+".kggggggk...",
+".kkkkggkk...",
+"....kggk....",
+"...kkkkkk...",
+"..kttttttk.."
+],
+pop: [
+"..kkkkkk..",
+".krrrrrrk.",
+".krrpprrk.",
+".krrrrrrk.",
+".krrrrrrk.",
+".krrpprrk.",
+".krrrrrrk.",
+"..kkkkkk..",
+"....kt....",
+"....kt....",
+"....kt...."
+],
+pop2: [
+"..........",
+"..kkkkkk..",
+".krrrrrrk.",
+".krrpprrk.",
+".krrrrrrk.",
+".krrrrrkk.",
+"..kkrrrk..",
+"...kkkkr..",
+"....kt.r..",
+"....kt....",
+"...rr.kt.."
+],
+pop3: [
+"..........",
+"..........",
+"...kkkk...",
+"..krrrrk..",
+".kkrrprkk.",
+"..krrrrk..",
+"...krrk.r.",
+"....kkr...",
+"....kt....",
+".r..kt..r.",
+".rrrrrrrr."
+]
+};
+
+function draw(canvas, name, scale){
+  const map = ART[name]; if(!map) return;
+  const w = Math.max(...map.map(r=>r.length)), h = map.length;
+  canvas.width = w; canvas.height = h;
+  canvas.style.width  = (w*scale)+'px';
+  canvas.style.height = (h*scale)+'px';
+  const x = canvas.getContext('2d');
+  x.clearRect(0,0,w,h);
+  map.forEach((row,j)=>{ [...row].forEach((ch,i)=>{
+    if(ch!=='.' && C[ch]){ x.fillStyle=C[ch]; x.fillRect(i,j,1,1); }
+  });});
+}
+document.querySelectorAll('canvas.art[data-art]').forEach(cv=>{
+  draw(cv, cv.dataset.art, +(cv.dataset.scale||6));
+});
+
+/* ---- signature: popsicle melts as the 5 minutes scroll by ---- */
+const meltCv = document.getElementById('meltCanvas');
+const meltLbl = document.getElementById('meltLbl');
+function meltUpdate(){
+  const max = document.documentElement.scrollHeight - innerHeight;
+  const f = max>0 ? Math.min(1, scrollY/max) : 0;
+  draw(meltCv, f<0.4 ? 'pop' : f<0.75 ? 'pop2' : 'pop3', 5);
+  const secs = Math.round(f*300);
+  meltLbl.textContent = Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+}
+addEventListener('scroll', meltUpdate, {passive:true});
+addEventListener('resize', meltUpdate);
+meltUpdate();
+</script>
+</body>
+</html>
